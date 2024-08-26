@@ -10,9 +10,9 @@ func (app *application) routes() http.Handler {
 	router.NotFound = http.HandlerFunc(app.notFoundResponse)
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-	router.HandlerFunc(http.MethodPost, "/api/login", app.test)
-	router.HandlerFunc(http.MethodGet, "/api/account", app.test)
-	router.HandlerFunc(http.MethodPost, "/api/sign-up", app.test)
+	router.HandlerFunc(http.MethodPost, "/api/login", app.loginHandler)
+	router.HandlerFunc(http.MethodPost, "/api/sign-up", app.signUpHandler)
+	router.HandlerFunc(http.MethodGet, "/api/account", app.signUpHandler)
 
 	return router
 }

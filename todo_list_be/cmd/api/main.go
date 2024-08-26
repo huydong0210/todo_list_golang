@@ -31,11 +31,10 @@ type config struct {
 	}
 }
 type application struct {
-	config          config
-	logger          *jsonlog.Logger
-	wg              sync.WaitGroup
-	securityContext *SecurityContext
-	db              *gorm.DB
+	config config
+	logger *jsonlog.Logger
+	wg     sync.WaitGroup
+	db     *gorm.DB
 }
 
 func main() {
@@ -53,7 +52,7 @@ func main() {
 		cfg.cors.trustedOrigins = strings.Fields(val)
 		return nil
 	})
-	flag.StringVar(&cfg.security.jwtSecret, "security-jwt-secret", "dklsfj;lasdkjfdas", "jwt secret key")
+	flag.StringVar(&cfg.security.jwtSecret, "security-jwt-secret", "dsfdsfdsfdsf", "jwt secret key")
 	flag.DurationVar(&cfg.security.exp, "security-exp", time.Minute*30, "jwt exp")
 
 	flag.Parse()
@@ -79,6 +78,8 @@ func main() {
 		logger: logger,
 		db:     db,
 	}
+	//test, _ := hashPassword("123456")
+	//fmt.Println(test)
 	err = app.serve()
 
 	if err != nil {

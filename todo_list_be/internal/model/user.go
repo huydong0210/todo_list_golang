@@ -7,15 +7,31 @@ type User struct {
 	Username string `gorm:"unique"`
 	Password string
 	Email    string
-	RoleId   int
 }
 
-func FindByUsername(db *gorm.DB, username string) error {
+var AnonymousUser = &User{}
+
+func FindUserByUsername(db *gorm.DB, username string) (User, error) {
 	var user User
 	result := db.Where("username = ?", username).First(&user)
-	return result.Error
+	return user, result.Error
 }
-func DeleteByUsername(db *gorm.DB, username string) error {
+func DeleteUserByUsername(db *gorm.DB, username string) error {
 	result := db.Where("username = ?", username).Delete(&User{})
 	return result.Error
+}
+func CreateUser(db *gorm.DB, user *User) error {
+	result := db.Create(user)
+	return result.Error
+}
+func InsertUserRoles(db *gorm.DB, userId uint, roleName string) error {
+	role, err := FindRoleByRoleName(db, roleName)
+	if err != nil {
+		return err
+	}
+	err = db.Exec("insert into user_role(user_id, role_id) value ( ? , ?)", userId, role.ID).Error
+	return err
+}
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }

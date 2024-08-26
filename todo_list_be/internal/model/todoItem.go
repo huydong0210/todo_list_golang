@@ -4,8 +4,9 @@ import "gorm.io/gorm"
 
 type TodoItem struct {
 	gorm.Model
-	Name  string
-	State string
+	Name   string
+	State  string
+	UserId uint
 }
 
 func CreateTodoItem(db *gorm.DB, item *TodoItem) error {
