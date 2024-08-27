@@ -35,3 +35,7 @@ func InsertUserRoles(db *gorm.DB, userId uint, roleName string) error {
 func (u *User) IsAnonymous() bool {
 	return u == AnonymousUser
 }
+func FindAllUsers(db *gorm.DB) (users []User, err error) {
+	err = db.Find(&users).Error
+	return
+}

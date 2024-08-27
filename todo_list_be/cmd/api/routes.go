@@ -12,8 +12,11 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/api/login", app.loginHandler)
 	router.HandlerFunc(http.MethodPost, "/api/sign-up", app.signUpHandler)
-	router.HandlerFunc(http.MethodGet, "/api/account", app.requireRole("ADMIN", app.test))
-
+	router.HandlerFunc(http.MethodGet, "/api/account", app.requireRole("USER", app.test))
+	router.HandlerFunc(http.MethodGet, "/api/list-users", app.requireRole("ADMIN", app.findAllUsers))
+	router.HandlerFunc(http.MethodPost, "/api/todo-item", app.requireRole("USER", app.createTodoItem))
+	router.HandlerFunc(http.MethodDelete, "/api/todo-item/:id", app.requireRole("USER", app.deleteTodoItem))
+	router.HandlerFunc(http.MethodPut, "/api/todo-item/:id", app.requireRole("USER", app.updateTodoItem))
 	return app.authenticate(router)
 }
 

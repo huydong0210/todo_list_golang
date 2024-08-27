@@ -21,3 +21,8 @@ func UpdateTodoItem(db *gorm.DB, id int, item *TodoItem) error {
 	result := db.Model(&TodoItem{}).Where("id = ?", id).Updates(item)
 	return result.Error
 }
+func FindTodoItemById(db *gorm.DB, id int) (TodoItem, error) {
+	var item TodoItem
+	result := db.First(&item, id)
+	return item, result.Error
+}
