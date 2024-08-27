@@ -63,25 +63,63 @@ func (app *application) ParseToken(tokenString string) (*jwt.Token, error) {
 }
 func (app *application) requireRole(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := app.contextGetUser(r)
-		if user.IsAnonymous() {
+		userPrincipal := app.contextGetUser(r)
+		if userPrincipal.isAnonymousUser() {
 			app.authenticationRequiredResponse(w, r)
 			return
 		}
-		roles, err := model.FindRolesByUserId(app.db, user.ID)
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-		}
+		roles := strings.Split(userPrincipal.Role, " ")
 		hashRole := false
 		for _, role := range roles {
-			if role.Name == requiredRole {
+			if role == requiredRole {
 				hashRole = true
 				break
 			}
 		}
 		if !hashRole {
 			app.authenticationRequiredResponse(w, r)
+			return
 		}
 		next.ServeHTTP(w, r)
 	}
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Authorization")
+
+		authorizationHeader := r.Header.Get("Authorization")
+
+		if authorizationHeader == "" {
+			r = app.contextSetUser(r, AnonymousUser)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		headerParts := strings.Split(authorizationHeader, " ")
+		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+
+		token := headerParts[1]
+		parsedToken, err := app.ParseToken(token)
+		if err != nil {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+		claims, oke := parsedToken.Claims.(*CustomClaims)
+		if !oke || !parsedToken.Valid {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+		userPrincipal := &UserPrincipal{
+			Username: claims.Username,
+			Role:     claims.Role,
+			Email:    claims.Email,
+		}
+		r = app.contextSetUser(r, userPrincipal)
+		next.ServeHTTP(w, r)
+
+	})
 }

@@ -12,9 +12,9 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/api/login", app.loginHandler)
 	router.HandlerFunc(http.MethodPost, "/api/sign-up", app.signUpHandler)
-	router.HandlerFunc(http.MethodGet, "/api/account", app.signUpHandler)
+	router.HandlerFunc(http.MethodGet, "/api/account", app.requireRole("ADMIN", app.test))
 
-	return router
+	return app.authenticate(router)
 }
 
 func (app *application) test(w http.ResponseWriter, r *http.Request) {
